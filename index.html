@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<title>Delivery Records</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+input,textarea,button{-webkit-appearance:none;appearance:none}
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+:root{--bg:#0b1220;--card:#131c2e;--line:#243350;--tx:#e6ecf5;--mut:#8b9ab3;--acc:#38bdf8;--paid:#22c55e;--pend:#f59e0b;--cash:#2dd4bf;--gpay:#60a5fa;--split:#c084fc;--bad:#f87171}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:560px;margin:0 auto;padding:12px 12px 40px}
+h1{font-size:20px;margin:6px 2px 12px}
+h3{margin:0 0 4px;font-size:18px}
+.tabs{display:flex;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px;gap:4px;position:sticky;top:6px;z-index:5}
+.tabs button{flex:1;border:0;background:none;color:var(--mut);font-weight:600;font-size:15px;font-family:inherit;padding:12px 4px;border-radius:10px}
+.tabs button.on{background:var(--acc);color:#04202e}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.tile small{color:var(--mut);display:block;font-size:13px}
+.tile b{font-size:19px}
+.tile.paid b{color:var(--paid)}.tile.pend b{color:var(--pend)}.tile.cash b{color:var(--cash)}.tile.gpay b{color:var(--gpay)}
+label{display:block;color:var(--mut);font-size:14px;margin-top:10px}
+input{width:100%;background:#0d1626;color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:13px;font-size:17px;margin-top:5px;font-family:inherit}
+input:focus{outline:2px solid var(--acc);border-color:transparent}
+.pre{display:flex;align-items:center;gap:8px}
+.pre span{font-weight:700;font-size:18px;margin-top:5px;color:var(--acc)}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{display:block;width:100%;border:0;border-radius:12px;padding:14px;font-weight:700;font-size:16px;font-family:inherit;margin-top:12px;background:var(--line);color:var(--tx)}
+.btn.primary{background:var(--acc);color:#04202e}
+.btn.danger{background:var(--bad);color:#2a0606}
+.btn:disabled{opacity:.4}
+.btn.ghost{background:none;border:1px solid var(--line);color:var(--mut)}
+.err{color:var(--bad);font-size:14px;min-height:18px;margin-top:6px}
+.item{border-left:5px solid var(--pend)}
+.item.paid{border-left-color:var(--paid)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.code{font-size:20px}.amt{font-size:20px;font-weight:700}
+.badge{display:inline-block;font-size:13px;font-weight:700;padding:3px 10px;border-radius:99px;margin:8px 6px 0 0}
+.b-paid{background:rgba(34,197,94,.15);color:var(--paid)}
+.b-pend{background:rgba(245,158,11,.15);color:var(--pend)}
+.b-cash{background:rgba(45,212,191,.15);color:var(--cash)}
+.b-gpay{background:rgba(96,165,250,.15);color:var(--gpay)}
+.b-split{background:rgba(192,132,252,.15);color:var(--split)}
+.brk{color:var(--mut);font-size:14px;margin-top:6px}
+.acts{display:flex;gap:8px;margin-top:10px}
+.acts button{flex:1;border:1px solid var(--line);background:none;color:var(--tx);border-radius:10px;padding:11px 4px;font-weight:600;font-size:14px;font-family:inherit}
+.acts .rec{background:var(--pend);color:#2b1a00;border:0;flex:2}
+.acts .del{color:var(--bad)}
+.empty{text-align:center;color:var(--mut);padding:26px 10px}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.ov[hidden]{display:none}
+.sheet{background:var(--card);border-radius:18px 18px 0 0;width:100%;max-width:560px;padding:18px;max-height:92vh;overflow:auto;border:1px solid var(--line)}
+.opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.opt{border:2px solid;background:none;border-radius:12px;padding:16px 4px;font-weight:700;font-size:16px;font-family:inherit}
+.opt.cash{color:var(--cash);border-color:var(--cash)}.opt.gpay{color:var(--gpay);border-color:var(--gpay)}.opt.split{color:var(--split);border-color:var(--split)}
+.mut{color:var(--mut);margin:2px 0}
+.tot{margin-top:10px;font-weight:700}
+.line{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line)}
+.line:last-child{border:0}
+textarea{width:100%;height:160px;background:#0d1626;color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:10px;font:13px monospace;margin-top:10px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#fff;color:#111;padding:10px 16px;border-radius:99px;font-weight:600;z-index:30;max-width:90%;text-align:center}
+#toast[hidden]{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Delivery Records</h1>
+  <div class="tabs" id="tabs">
+    <button data-t="morning">Morning</button>
+    <button data-t="night">Night</button>
+    <button data-t="overview">Overview</button>
+  </div>
+  <div id="main"></div>
+</div>
+<div class="ov" id="ov" hidden><div class="sheet" id="sheet"></div></div>
+<div id="toast" hidden></div>
+
+<script>
+(function(){
+var KEY='deliveryRecords.v1';
+var db={morning:[],night:[]},tab='morning';
+try{var s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.morning)&&Array.isArray(s.night))db=s;}catch(e){}
+var $=function(q,r){return (r||document).querySelector(q)};
+var r2=function(n){return Math.round(n*100)/100};
+var cents=function(n){return Math.round(n*100)};
+var fmt=function(n){return '₹'+r2(n).toLocaleString('en-IN',{maximumFractionDigits:2})};
+var NAMES={morning:'Morning',night:'Night'};
+function save(){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){toast('Could not save data')}}
+var tt;
+function toast(m){var t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(function(){t.hidden=true},2500)}
+function calc(l){
+  var t={n:l.length,total:0,coll:0,pend:0,cash:0,gpay:0};
+  l.forEach(function(d){
+    t.total+=d.amount;
+    if(d.status==='paid'){t.coll+=d.amount;t.cash+=d.cash;t.gpay+=d.gpay}else t.pend+=d.amount;
+  });
+  ['total','coll','pend','cash','gpay'].forEach(function(k){t[k]=r2(t[k])});
+  return t;
+}
+function find(id){return db[tab].filter(function(d){return d.id===id})[0]}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function dupe(code,exceptId){return db[tab].some(function(d){return d.id!==exceptId&&+d.code===+code})}
+function checkCode(v){return /^\d{1,6}$/.test(v)}
+function parseAmt(v){var n=parseFloat(v);return(isFinite(n)&&n>0&&n<=10000000)?r2(n):null}
+
+/* ---------- rendering ---------- */
+function render(){
+  document.querySelectorAll('#tabs button').forEach(function(b){b.classList.toggle('on',b.dataset.t===tab)});
+  var m=$('#main');
+  if(tab==='overview'){m.innerHTML=overview();return}
+  var l=db[tab].slice().sort(function(a,b){return (+a.code)-(+b.code)});
+  var t=calc(l);
+  var h='<div class="grid">'+
+   tile('Deliveries',t.n,'')+tile('Total amount',fmt(t.total),'')+
+   tile('Collected',fmt(t.coll),'paid')+tile('Pending',fmt(t.pend),'pend')+
+   tile('Cash collected',fmt(t.cash),'cash')+tile('GPay collected',fmt(t.gpay),'gpay')+'</div>'+
+   '<form id="add" class="card" novalidate><h3>Add delivery</h3><div class="fields">'+
+   '<label>Delivery code<div class="pre"><span>T-</span><input id="code" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="01"></div></label>'+
+   '<label>Amount<div class="pre"><span>₹</span><input id="amt" type="number" inputmode="decimal" step="0.01" min="0" placeholder="220"></div></label></div>'+
+   '<div class="err" id="adderr"></div><button class="btn primary" type="submit" style="margin-top:4px">Add Delivery</button></form>';
+  if(!l.length)h+='<div class="empty">No '+NAMES[tab].toLowerCase()+' deliveries yet. Add the first one above.</div>';
+  l.forEach(function(d){h+=card(d)});
+  m.innerHTML=h;
+}
+function tile(a,b,c){return '<div class="tile '+c+'"><small>'+a+'</small><b>'+b+'</b></div>'}
+function card(d){
+  var paid=d.status==='paid',h='<div class="card item '+(paid?'paid':'')+'" data-id="'+d.id+'">'+
+   '<div class="row"><b class="code">T-'+d.code+'</b><span class="amt">'+fmt(d.amount)+'</span></div>'+
+   '<span class="badge '+(paid?'b-paid':'b-pend')+'">'+(paid?'Paid':'Payment Pending')+'</span>';
+  if(paid){
+    h+='<span class="badge b-'+d.method+'">'+({cash:'Cash',gpay:'GPay',split:'Split'})[d.method]+'</span>';
+    if(d.method==='split')h+='<div class="brk">Cash '+fmt(d.cash)+' + GPay '+fmt(d.gpay)+'</div>';
+  }
+  h+='<div class="acts">'+(paid?'<button data-a="pay">Change payment</button>':'<button class="rec" data-a="pay">Record Payment</button>')+
+   '<button data-a="edit">Edit</button><button class="del" data-a="del">Delete</button></div></div>';
+  return h;
+}
+function overview(){
+  var m=calc(db.morning),n=calc(db.night);
+  var rows=[['Morning total',m.total],['Night total',n.total],['Combined delivery amount',m.total+n.total],
+   ['Combined collected',m.coll+n.coll],['Combined pending',m.pend+n.pend],['Combined Cash',m.cash+n.cash],['Combined GPay',m.gpay+n.gpay]];
+  var h='<div class="card"><h3>Daily overview</h3><p class="mut">'+(m.n+n.n)+' deliveries ('+m.n+' morning, '+n.n+' night)</p>';
+  rows.forEach(function(r){h+='<div class="line"><span>'+r[0]+'</span><b>'+fmt(r[1])+'</b></div>'});
+  return h+'</div><button class="btn primary" data-a="export">Export CSV</button><button class="btn danger" data-a="reset">Reset Daily Records</button>';
+}
+
+/* ---------- modal ---------- */
+function sheet(html){$('#sheet').innerHTML=html;$('#ov').hidden=false}
+function closeM(){$('#ov').hidden=true;$('#sheet').innerHTML=''}
+function confirmBox(title,msg,okText,fn){
+  sheet('<h3>'+title+'</h3><p class="mut">'+msg+'</p><button class="btn danger" id="yes">'+okText+'</button><button class="btn ghost" data-close>Cancel</button>');
+  $('#yes').onclick=function(){closeM();fn()};
+}
+function payModal(id){
+  var d=find(id);if(!d)return;
+  sheet('<h3>Record payment</h3><p class="mut">T-'+d.code+' · '+fmt(d.amount)+'</p>'+
+   '<div class="opts"><button class="opt cash" data-m="cash">Cash</button><button class="opt gpay" data-m="gpay">GPay</button><button class="opt split" data-m="split">Split</button></div>'+
+   '<div id="sp" hidden><label>Cash Amount (₹)<input id="sc" type="number" inputmode="decimal" step="0.01" min="0"></label>'+
+   '<label>GPay Amount (₹)<input id="sg" type="number" inputmode="decimal" step="0.01" min="0"></label>'+
+   '<div class="tot" id="st"></div><div class="err" id="se"></div>'+
+   '<button class="btn primary" id="sok" disabled style="margin-top:4px">Confirm Split</button></div>'+
+   (d.status==='paid'?'<button class="btn" id="unpay">Mark as pending</button>':'')+
+   '<button class="btn ghost" data-close>Cancel</button>');
+  var sc=$('#sc'),sg=$('#sg'),touched=false;
+  function chk(){
+    var c=parseFloat(sc.value)||0,g=parseFloat(sg.value)||0;
+    var ok=c>=0&&g>=0&&(sc.value!==''||sg.value!=='')&&cents(c)+cents(g)===cents(d.amount);
+    $('#st').textContent='Total '+fmt(c+g)+' of '+fmt(d.amount);
+    $('#se').textContent=ok?'':(c<0||g<0?'Amounts cannot be negative':'Cash + GPay must equal '+fmt(d.amount));
+    $('#sok').disabled=!ok;return ok;
+  }
+  sc.oninput=function(){if(!touched){var c=parseFloat(sc.value)||0;sg.value=sc.value===''?'':r2(d.amount-c)}chk()};
+  sg.oninput=function(){touched=true;chk()};
+  if(d.status==='paid'&&d.method==='split'){sc.value=d.cash;sg.value=d.gpay;touched=true;$('#sp').hidden=false;chk()}
+  document.querySelectorAll('[data-m]').forEach(function(b){b.onclick=function(){
+    var m=b.dataset.m;
+    if(m==='split'){$('#sp').hidden=false;sc.focus();chk();return}
+    d.status='paid';d.method=m;d.cash=m==='cash'?d.amount:0;d.gpay=m==='gpay'?d.amount:0;
+    save();closeM();render();toast('Saved as '+(m==='cash'?'Cash':'GPay'));
+  }});
+  $('#sok').onclick=function(){
+    if(!chk())return;
+    var c=r2(parseFloat(sc.value)||0),g=r2(parseFloat(sg.value)||0);
+    d.status='paid';d.method='split';d.cash=c;d.gpay=g;save();closeM();render();toast('Split payment saved');
+  };
+  var u=$('#unpay');if(u)u.onclick=function(){d.status='pending';d.method=null;d.cash=0;d.gpay=0;save();closeM();render()};
+}
+function editModal(id){
+  var d=find(id);if(!d)return;
+  sheet('<h3>Edit delivery</h3><div class="fields">'+
+   '<label>Delivery code<div class="pre"><span>T-</span><input id="ec" inputmode="numeric" maxlength="6" value="'+d.code+'"></div></label>'+
+   '<label>Amount<div class="pre"><span>₹</span><input id="ea" type="number" inputmode="decimal" step="0.01" min="0" value="'+d.amount+'"></div></label></div>'+
+   '<div class="err" id="ee"></div><button class="btn primary" id="esv" style="margin-top:4px">Save changes</button><button class="btn ghost" data-close>Cancel</button>');
+  $('#esv').onclick=function(){
+    var c=$('#ec').value.trim(),a=parseAmt($('#ea').value),e=$('#ee');
+    if(!c)return e.textContent='Enter a delivery code';
+    if(!checkCode(c))return e.textContent='Code must be digits only';
+    if(dupe(c,d.id))return e.textContent='T-'+c+' already exists in '+NAMES[tab];
+    if(a===null)return e.textContent='Enter an amount greater than 0';
+    var changed=cents(a)!==cents(d.amount);
+    d.code=c;d.amount=a;
+    if(d.status==='paid'&&changed){
+      if(d.method==='cash'){d.cash=a;d.gpay=0}
+      else if(d.method==='gpay'){d.gpay=a;d.cash=0}
+      else{d.status='pending';d.method=null;d.cash=0;d.gpay=0;toast('Amount changed: record the split payment again')}
+    }
+    save();closeM();render();
+  };
+}
+function exportModal(){
+  var rows=[['Section','Code','Amount','Status','Method','Cash','GPay']];
+  ['morning','night'].forEach(function(k){
+    db[k].slice().sort(function(a,b){return (+a.code)-(+b.code)}).forEach(function(d){
+      var p=d.status==='paid';
+      rows.push([NAMES[k],'T-'+d.code,d.amount,p?'Paid':'Pending',p?({cash:'Cash',gpay:'GPay',split:'Split'})[d.method]:'',p?d.cash:0,p?d.gpay:0]);
+    });
+  });
+  var csv=rows.map(function(r){return r.join(',')}).join('\n');
+  sheet('<h3>Export CSV</h3><p class="mut">'+(rows.length-1)+' records</p><textarea id="csv" readonly></textarea>'+
+   '<button class="btn primary" id="dl">Download file</button><button class="btn" id="cp">Copy to clipboard</button><button class="btn ghost" data-close>Close</button>');
+  $('#csv').value=csv;
+  $('#dl').onclick=function(){
+    try{
+      var u=URL.createObjectURL(new Blob([csv],{type:'text/csv'})),a=document.createElement('a');
+      a.href=u;a.download='deliveries-'+new Date().toISOString().slice(0,10)+'.csv';
+      document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},1000);
+    }catch(e){toast('Download blocked. Use Copy instead')}
+  };
+  $('#cp').onclick=function(){
+    var t=$('#csv');t.select();t.setSelectionRange(0,csv.length+1);
+    try{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(csv);else document.execCommand('copy');toast('Copied')}
+    catch(e){try{document.execCommand('copy');toast('Copied')}catch(x){toast('Select the text and copy it')}}
+  };
+}
+function resetModal(){
+  sheet('<h3>Reset all records?</h3><p class="mut">This permanently deletes every Morning and Night delivery. Export a CSV first if you need a copy. Type RESET to confirm.</p>'+
+   '<input id="rt" autocomplete="off" placeholder="RESET"><button class="btn danger" id="rok" disabled>Delete everything</button><button class="btn ghost" data-close>Cancel</button>');
+  $('#rt').oninput=function(){$('#rok').disabled=this.value.trim()!=='RESET'};
+  $('#rok').onclick=function(){db={morning:[],night:[]};save();closeM();render();toast('All records cleared')};
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',function(e){
+  var t=e.target;
+  if(t.id==='ov'||t.hasAttribute('data-close')){closeM();return}
+  if(t.dataset.t){tab=t.dataset.t;render();return}
+  var a=t.dataset.a;if(!a)return;
+  var c=t.closest('[data-id]'),id=c?c.dataset.id:null;
+  if(a==='pay')payModal(id);
+  else if(a==='edit')editModal(id);
+  else if(a==='del'){var d=find(id);confirmBox('Delete T-'+d.code+'?','This removes the delivery from '+NAMES[tab]+' and cannot be undone.','Delete',function(){
+    db[tab]=db[tab].filter(function(x){return x.id!==id});save();render();});}
+  else if(a==='export')exportModal();
+  else if(a==='reset')resetModal();
+});
+document.addEventListener('input',function(e){
+  if(e.target.id==='code'||e.target.id==='ec')e.target.value=e.target.value.replace(/\D/g,'');
+});
+document.addEventListener('submit',function(e){
+  e.preventDefault();if(e.target.id!=='add')return;
+  var c=$('#code').value.trim(),a=parseAmt($('#amt').value),er=$('#adderr');
+  if(!c)return er.textContent='Enter a delivery code';
+  if(!checkCode(c))return er.textContent='Code must be digits only';
+  if(dupe(c))return er.textContent='T-'+c+' already exists in '+NAMES[tab];
+  if(a===null)return er.textContent='Enter an amount greater than 0';
+  db[tab].push({id:uid(),code:c,amount:a,status:'pending',method:null,cash:0,gpay:0});
+  save();render();$('#code').focus();
+});
+render();
+})();
+</script>
+</body>
+</html>
